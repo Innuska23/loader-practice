@@ -8,11 +8,9 @@ import { fetchDecksTC } from '../features/decks/decks-thunks.ts';
 
 export const App = () => {
   const status = useAppSelector(selectAppStatus);
-  const error = useAppSelector(selectAppError);
 
   return (
     <div>
-      {error}
       {status === 'loading' && <LinearLoader />}
       <Decks />
       <GlobalError />

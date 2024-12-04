@@ -1,8 +1,9 @@
 import { Dispatch } from 'redux'
 import { decksAPI, UpdateDeckParams } from './decks-api.ts'
-import { addDeckAC, deleteDeckAC, setAppErrorAC, setDecksAC, updateDeckAC } from './decks-reducer.ts'
-import { setAppStatus } from '../../app/app-reducer.ts'
+import { addDeckAC, deleteDeckAC, setDecksAC, updateDeckAC } from './decks-reducer.ts'
+import { setAppError, setAppStatus } from '../../app/app-reducer.ts'
 import { isAxiosError } from 'axios';
+import { handleError } from '../../common/utils/handle-error.ts';
 
 export const fetchDecksTC = () => async (dispatch: Dispatch) => {
   dispatch(setAppStatus('loading'));
@@ -19,34 +20,40 @@ export const fetchDecksTC = () => async (dispatch: Dispatch) => {
 };
 
 export const addDeckTC = (name: string) => async (dispatch: Dispatch) => {
-  return decksAPI.addDeck(name).then((res) => {
+  try {
+    const res = await decksAPI.addDeck(name)
     dispatch(addDeckAC(res.data))
-  })
+  }
+  catch (error) {
+    handleError(error, dispatch)
+  }
+  finally {
+    dispatch(setAppStatus('idle'));
+  }
 }
 
 export const deleteDeckTC = (id: string) => async (dispatch: Dispatch) => {
-  return decksAPI.deleteDeck(id).then((res) => {
+  try {
+    const res = await decksAPI.deleteDeck(id)
     dispatch(deleteDeckAC(res.data.id))
-  })
+  }
+  catch (error) {
+    handleError(error, dispatch)
+  }
+  finally {
+    dispatch(setAppStatus('idle'));
+  }
 }
 
 export const updateDeckTC = (params: UpdateDeckParams) => async (dispatch: Dispatch) => {
   try {
     const res = await decksAPI.updateDeck(params)
     dispatch(updateDeckAC(res.data))
-    dispatch(setAppErrorAC(null))
+    dispatch(setAppError(null))
   } catch (error) {
-    console.log(error)
-    let errorMessage: string
-    if (isAxiosError<ServerError>(error)) {
-      errorMessage = error.response ? error.response.data?.errorMessages[0].message : error.message
-    } else {
-      errorMessage = (error as Error).message
-    }
-    dispatch(setAppErrorAC(errorMessage))
-    dispatch(setAppStatus('failed'))
+    handleError(error, dispatch)
   }
-}
-type ServerError = {
-  errorMessages: Array<{ field: string, message: string }>
+  finally {
+    dispatch(setAppStatus('idle'));
+  }
 }
