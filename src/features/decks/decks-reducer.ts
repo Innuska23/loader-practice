@@ -5,6 +5,7 @@ const initialState = {
   searchParams: {
     name: '',
   },
+  // error: null as string | null,
 }
 
 type DecksState = typeof initialState
@@ -31,6 +32,11 @@ export const decksReducer = (state: DecksState = initialState, action: DecksActi
         ...state,
         decks: state.decks.map((deck) => (deck.id === action.updatedDeck.id ? action.updatedDeck : deck)),
       }
+    // case 'SET_ERROR':
+    //   return {
+    //     ...state,
+    //     error: action.payload.error,
+    //   }
     default:
       return state
   }
@@ -41,6 +47,7 @@ type DecksActions =
   | ReturnType<typeof addDeckAC>
   | ReturnType<typeof deleteDeckAC>
   | ReturnType<typeof updateDeckAC>
+  | ReturnType<typeof setAppErrorAC>
 
 export const setDecksAC = (decks: Deck[]) => ({
   type: 'DECKS/SET-DECKS' as const,
@@ -60,3 +67,10 @@ export const updateDeckAC = (updatedDeck: Deck) => ({
   type: 'DECKS/UPDATE-DECK' as const,
   updatedDeck,
 })
+
+export const setAppErrorAC = (error: string | null) => {
+  return {
+    type: "SET_ERROR",
+    payload: { error },
+  } as const
+}
